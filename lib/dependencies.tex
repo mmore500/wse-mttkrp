@@ -1,0 +1,290 @@
+\usepackage[dvipsnames,table,xcdraw]{xcolor}
+\usepackage[pdftex]{graphicx}
+
+\usepackage{adjustbox}
+\usepackage[noEnd=true,commentColor=black]{algpseudocodex}
+\usepackage{algorithm}
+\usepackage{amsmath,amssymb,amsthm,amsfonts}
+\usepackage{annotate-equations}
+\usepackage{authblk}
+\usepackage{array}
+\usepackage{bibunits}
+\usepackage{bold-extra}
+\usepackage{booktabs}
+\usepackage{cancel}
+\usepackage{caption}
+\usepackage{circledsteps}
+\usepackage{cite}
+\usepackage{csvsimple}
+\usepackage{etoolbox}
+\usepackage{float}
+\newfloat{algorithm}{t}{lop} % adapted from https://tex.stackexchange.com/a/6166/316176
+\usepackage[margin=1in]{geometry}
+\usepackage{hyperref}
+\usepackage{import}
+\usepackage[inline]{enumitem}
+\usepackage{mathtools}
+\usepackage{natbib}
+\usepackage{orcidlink}
+\usepackage{physics}
+\usepackage{placeins}
+\usepackage{rotating}
+\usepackage[subtle]{savetrees}
+\usepackage{siunitx}
+\usepackage{stix}
+\usepackage{stmaryrd}
+\usepackage{subcaption}
+\usepackage{tabularx}
+\usepackage{textcomp}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usepackage[most]{tcolorbox}
+\usepackage{varwidth}
+\usepackage{xparse}
+\usepackage{pythonhighlight}
+\usepackage{empheq}
+\usepackage{cleveref}
+
+\definecolor{seabornBrown}{RGB}{134, 86, 75}
+\definecolor{seabornPink}{RGB}{255, 119, 193}
+\definecolor{seabornPinkDark}{RGB}{152, 34, 116}
+
+% adapted from https://tex.stackexchange.com/a/89932
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+
+% adapted from https://tex.stackexchange.com/a/103898
+\DeclareRobustCommand{\rchi}{{\mathpalette\irchi\relax}}
+\newcommand{\irchi}[2]{\raisebox{\depth}{$#1\chi$}} % inner command, used by \rchi
+
+% adapted from https://tex.stackexchange.com/a/512504
+\newtcolorbox{mybox}{
+enhanced,
+boxrule=0pt,frame hidden,
+borderline west={4pt}{0pt}{green!50!black},
+colback=green!30!gray!15,
+sharp corners,
+parbox=false
+}
+
+% adapted from https://tex.stackexchange.com/a/332653/316176
+\makeatletter
+\def\mathcolor#1#{\@mathcolor{#1}}
+\def\@mathcolor#1#2#3{%
+  \protect\leavevmode
+  \begingroup\color#1{#2}#3\endgroup
+}
+\makeatother
+
+% adapted from https://tex.stackexchange.com/a/129455/316176
+\newcommand{\adjustedaccent}[1]{%
+  \mathchoice{}{}
+    {\mbox{\raisebox{-.75ex}[0pt][0pt]{$\scriptscriptstyle#1$}}}
+    {\mbox{\raisebox{-.55ex}[0pt][0pt]{\scalebox{.8}{$\scriptscriptstyle#1$}}}}
+}
+\newcommand\smileacc[1]{\overset{\adjustedaccent{\smile}}{#1}}
+\newcommand\frownacc[1]{\overset{\adjustedaccent{\smallfrown}}{#1}}
+
+% make tau slightly larger
+% adapted from https://tex.stackexchange.com/a/413897
+\makeatletter
+\DeclareRobustCommand{\ctau}{{% capital tau
+  \mathpalette\cap@greek\tau
+}}
+\DeclareRobustCommand{\csigma}{{% capital sigma
+  \mathpalette\cap@greek\sigma
+}}
+\newcommand{\cap@greek}[2]{%
+  \begingroup
+  \sbox\z@{$#1t$}% measure a capital letter in the current style
+  \resizebox{!}{\ht\z@}{$\m@th#1#2$}% resize tau to match
+  \endgroup
+}
+\makeatother
+
+
+\newcommand{\colort}{\mathcolor{VioletRed}{\mathrm{t}}}
+\newcommand{\colortsetofT}{\lBrace \colort \rBrace}
+\newcommand{\colortsetofTone}{\lBrace \colort + 1 \rBrace}
+\newcommand{\colortau}{\mathcolor{orange}{\ctau}}
+\newcommand{\colortausetoft}{\lBrace \colortau \rBrace}
+\newcommand{\colortausetofT}{\{\hspace{-0.5ex}\lBrace \colortau \rBrace\hspace{-0.5ex}\}}
+\newcommand{\colorT}{\mathcolor{red}{T}}
+\newcommand{\colorTbar}{\mathcolor{red}{\smash{\smileacc{T}}}}
+
+\newcommand{\colork}{\mathcolor{purple}{k}}
+\newcommand{\colors}{\mathcolor{blue}{\hat{\mathrm{s}}}}
+\newcommand{\colorS}{\mathcolor{blue}{S}}  % BlueViolet
+\newcommand{\colorK}{\mathcolor{purple}{\mathrm{K}}}
+
+\newcommand{\colorh}{\mathcolor{violet}{h}}
+\newcommand{\colorH}{\mathcolor{violet}{\mathrm{H}}}
+\newcommand{\colorHcal}{\mathcolor{violet}{\mathcal{H}}}
+
+\newcommand{\colorL}{\mathcolor{purple}{\mathrm{L}}}
+
+\newcommand{\colorB}{\mathcolor{olive}{\mathcal{B}}}
+\newcommand{\colorBnot}{\mathcolor{olive}{\cancel{\mathcal{B}}}}
+
+\newcommand{\colorg}{\mathcolor{teal}{g}}
+\newcommand{\colorG}{\mathcolor{teal}{G}}
+
+\let\mycheckmark\checkmark
+\renewcommand{\checkmark}{\textcolor{ForestGreen}{\mycheckmark}}
+
+\newcommand{\nullval}{\texttt{null}}
+
+\theoremstyle{definition}
+\newtheorem{proofpart}{Part}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}{Lemma}[section]
+\newtheorem{sublemma}{Sublemma}[lemma]
+\newtheorem{corollary}{Corollary}[lemma]
+\makeatletter
+\@addtoreset{proofpart}{theorem}
+\@addtoreset{proofpart}{lemma}
+\@addtoreset{proofpart}{corollary}
+\makeatother
+
+\hypersetup{breaklinks=true}
+
+\renewcommand{\eqnhighlightheight}{\mathstrut}
+
+% adapted from https://tex.stackexchange.com/a/326380/316176
+% Syntax: \colorboxed[<color model>]{<color specification>}{<math formula>}
+\newcommand*{\colorboxed}{}
+\def\colorboxed#1#{%
+  \colorboxedAux{#1}%
+}
+\newcommand*{\colorboxedAux}[3]{%
+  % #1: optional argument for color model
+  % #2: color specification
+  % #3: formula
+  \begingroup
+    \setlength\fboxrule{1pt}
+    \colorlet{cb@saved}{.}%
+    \color#1{#2}%
+    \boxed{%
+      \color{cb@saved}%
+      #3%
+    }%
+  \endgroup
+}
+
+% adapted from https://tex.stackexchange.com/a/118369/316176
+\makeatletter
+\renewcommand{\boxed}[1]{\text{\fboxsep=.2em\fbox{\m@th$\displaystyle#1$}}}
+\makeatother
+
+% adapted from https://tex.stackexchange.com/a/50973/316176
+\renewcommand{\stackrel}[2]{%
+  \mathrel{\smash{\vbox{\offinterlineskip\ialign{%
+    \hfil##\hfil\cr
+    $\scriptscriptstyle#1$\cr
+    %\noalign{\kern0ex}
+    $#2$\cr
+}}}}}
+
+\newcommand{\hv}{h.v.\hphantom{}}
+
+% adapted from https://tex.stackexchange.com/a/304667/316176
+\newcommand{\twodots}{\mathinner {\ldotp \ldotp}}
+
+
+% adapted from https://tex.stackexchange.com/a/657134/316176
+\let\mythealgorithm\thealgorithm
+
+\makeatletter
+\newlength{\comment@width}
+
+\renewcommand{\Comment}[1]{%
+  \sbox0{#1}% measure
+  \ifdim\wd0>\comment@width
+    \setlength{\comment@width}{\wd0}%
+  \fi
+  \ifcsname comment@\arabic{algorithm}@width\endcsname
+    \algorithmiccomment{\makebox[\csname comment@\mythealgorithm @width\endcsname][l]{#1}}%
+  \else
+    \algorithmiccomment{#1}%
+  \fi
+}
+\AtBeginEnvironment{algorithmic}{\setlength{\comment@width}{0pt}}
+\AtEndEnvironment{algorithmic}{%
+  \immediate\write\@auxout{%
+    \string\algcommentwidth{\mythealgorithm}{\the\comment@width}%
+  }%
+}
+\newcommand{\algcommentwidth}[2]{%
+  \global\@namedef{comment@#1@width}{#2}%
+}
+\makeatother
+
+% adapted from https://tex.stackexchange.com/a/16060/316176
+% https://tex.stackexchange.com/a/373172/316176
+\MakeRobust{\Call}
+\makeatletter
+% Reinsert missing \algbackskip
+\def\algbackskip{\hskip-\ALG@thistlm}
+\makeatother
+
+% adapted from https://stackoverflow.com/a/70362217/17332200
+\lstnewenvironment{mypython}[1][]{\lstset{style=mypython,#1}}{}
+
+% adapted from https://tex.stackexchange.com/a/661996/316176
+\definecolor{darkred}{HTML}{E32B60}
+\newcommand{\code}[1]{\mbox{%
+    \ttfamily
+    \color{darkred}
+    \tcbox[
+        on line,
+        boxsep=0pt, left=4pt, right=4pt, top=2pt, bottom=1.5pt,
+        toprule=0pt, rightrule=0pt, bottomrule=0pt, leftrule=0pt,
+        oversize=0pt, enlarge left by=0pt, enlarge right by=0pt,
+        colframe=white, colback=black!12,
+        height=.8\baselineskip
+    ]{\color{darkred}\detokenize{#1}}%
+}}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=t,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+    % style=pythonhighlight-style,
+}
+
+\lstset{style=pythonhighlight-style}
+
+\DeclareCaptionFormat{listing}{\rule{\dimexpr\textwidth\relax}{0.4pt}\par\vskip1pt#1#2#3\par\vspace{-5pt}\rule{\dimexpr\textwidth\relax}{0.4pt}}
+\captionsetup[lstlisting]{format=listing,singlelinecheck=false, margin=0pt, ,labelsep=space,labelfont=bf}
+
+% adapted from https://tex.stackexchange.com/a/472608/316176
+\usepackage{pdflscape,lipsum}
+\usepackage{eso-pic,zref-user}
+\newcounter{cntsideways}
+\makeatletter
+\AddToShipoutPictureBG{%
+ \ifnum\zref@extractdefault{rotate\number\value{page}}{page}{0}=0
+  \PLS@RemoveRotate
+ \else
+  \PLS@AddRotate{90}%
+ \fi}
+
+\newcommand\rotatesidewayslabel{\stepcounter{cntsideways}%
+ \zlabel{tmp\thecntsideways}\zlabel{rotate\zref@extractdefault{tmp\thecntsideways}{page}{0}}}

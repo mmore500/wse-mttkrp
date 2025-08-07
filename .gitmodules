@@ -1,0 +1,10 @@
+[submodule "binder/binder"]
+	path = binder/binder
+	url = https://github.com/mmore500/hstrat-agentless-concept.git
+	branch = binder
+	shallow = true
+[submodule "binder/binder-2024-10-20-example.ipynb"]
+	path = binder/binder-2024-10-20-example.ipynb
+	url = https://github.com/mmore500/hstrat-agentless-concept.git
+	branch = binder-2024-10-20-example.ipynb
+	shallow = true
