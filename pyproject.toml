@@ -29,8 +29,8 @@ file = "README.md"
 content-type = "text/markdown"
 
 [project.urls]
-homepage = "https://github.com/mmore500/paperproject.git"
-repository = "https://github.com/mmore500/paperproject"
+homepage = "https://github.com/mmore500/wse-mttkrp.git"
+repository = "https://github.com/mmore500/wse-mttkrp"
 
 [tool.setuptools]
 include-package-data = true
