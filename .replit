@@ -1,0 +1,12 @@
+run = "make -C tex fresher"
+hidden = [".config"]
+
+[nix]
+channel = "stable-24_05"
+
+[env]
+GIT_EDITOR = "vim"
+
+[[ports]]
+localPort = 8000
+externalPort = 80

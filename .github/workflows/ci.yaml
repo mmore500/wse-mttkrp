@@ -1,0 +1,226 @@
+name: CI
+on:
+  push:
+    branches: [ master, main, dev ]
+  pull_request:
+    branches:
+      - '**'
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+jobs:
+
+  tidy:
+    runs-on: ubuntu-22.04
+    env:
+      # RE https://stackoverflow.com/a/40184923/17332200
+      PIP_NO_CACHE_DIR: 1
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: |
+          sudo apt-get update -y
+          sudo apt-get install -y bibtool rename
+          npm install -g bibtex-tidy
+          python -m pip install pip --upgrade
+          sudo python -m pip install pip --upgrade
+          sudo python -m pip install uv --upgrade
+          sudo python -m uv pip install -r requirements.txt  --system
+      - run: ./tidy/test_tidy.sh
+
+  lint:
+    runs-on: ubuntu-22.04
+    env:
+      # RE https://stackoverflow.com/a/40184923/17332200
+      PIP_NO_CACHE_DIR: 1
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          python -m pip install pip --upgrade
+          sudo python -m pip install pip --upgrade
+          sudo python -m pip install uv --upgrade
+          sudo python -m uv pip install -r requirements.txt  --system
+      - run: ./lint.sh
+
+  test-pylib:
+    runs-on: ubuntu-22.04
+    env:
+      # RE https://stackoverflow.com/a/40184923/17332200
+      PIP_NO_CACHE_DIR: 1
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          python -m pip install pip --upgrade
+          sudo python -m pip install pip --upgrade
+          sudo python -m pip install uv --upgrade
+          sudo python -m uv pip install -r requirements.txt  --system
+      - run: python -m pytest -n auto tests
+
+  # adapted from https://code.dblock.org/2021/09/03/generating-task-matrix-by-looping-over-repo-files-with-github-actions.html
+  list-notebooks:
+    runs-on: ubuntu-22.04
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: set-matrix
+        run: |
+          cd binder
+          echo "::set-output name=matrix::$(ls *.ipynb | jq -R -s -c 'split("\n")[:-1]')"
+
+  binder-notebook:
+    needs: list-notebooks
+    runs-on: ubuntu-22.04
+    env:
+      # RE https://stackoverflow.com/a/40184923/17332200
+      PIP_NO_CACHE_DIR: 1
+    strategy:
+      fail-fast: false
+      matrix:
+        notebook: ${{ fromJson(needs.list-notebooks.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup headless display
+        uses: pyvista/setup-headless-display-action@v2
+      - run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ghostscript imagemagick python3-pil libgif-dev ffmpeg mat2
+          python -m pip install pip --upgrade
+          sudo python -m pip install pip --upgrade
+          sudo python -m pip install uv --upgrade
+          sudo python -m uv pip install -r requirements.txt  --system
+      # Adapted from https://askubuntu.com/a/524368
+      - run: ./binder/execute_notebooks.sh "${{ matrix.notebook }}"
+      # adapted from https://unix.stackexchange.com/a/545630
+      - run: find -type f -name "*.pdf" -exec bash -c 'gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -dNOPAUSE -dBATCH -dQUIET -sOutputFile="new.pdf" "{}"; rm "{}"; mv "new.pdf" "{}";' {} \;
+      - name: Strip PDF metadata
+        run: |
+          find -type f -name "*.pdf" -exec mat2 --lightweight --inplace --unknown-members keep "{}" \;
+      - run: |
+          git init
+          sed -i '/teeplots\//d' binder/.gitignore
+          rm -rf .gitmodules
+      - uses: fregante/setup-git-user@v1
+      - run: git commit --allow-empty -m "Initial commit"
+      - uses: JamesIves/github-pages-deploy-action@4.0.0
+        with:
+          branch: binder-${{ matrix.notebook }} # The branch the action should deploy to.
+          folder: . # The folder the action should deploy.
+
+  binder:
+    runs-on: ubuntu-22.04
+    env:
+      # RE https://stackoverflow.com/a/40184923/17332200
+      PIP_NO_CACHE_DIR: 1
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup headless display
+        uses: pyvista/setup-headless-display-action@v2
+      - run: |
+          sudo apt-get update -y
+          sudo apt-get install -y ghostscript imagemagick python3-pil libgif-dev ffmpeg
+          python -m pip install pip --upgrade
+          sudo python -m pip install pip --upgrade
+          sudo python -m pip install uv --upgrade
+          sudo python -m uv pip install -r requirements.txt  --system
+      # Adapted from https://askubuntu.com/a/524368
+      - run: ./binder/execute_notebooks.sh
+      # adapted from https://unix.stackexchange.com/a/545630
+      - run: find -type f -name "*.pdf" -exec bash -c 'gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -dNOPAUSE -dBATCH -dQUIET -sOutputFile="new.pdf" "{}"; rm "{}"; mv "new.pdf" "{}";' {} \;
+      - run: |
+          git init
+          sed -i '/teeplots\//d' binder/.gitignore
+          rm -rf .gitmodules
+      - uses: fregante/setup-git-user@v1
+      - run: git commit --allow-empty -m "Initial commit"
+      - uses: JamesIves/github-pages-deploy-action@4.0.0
+        with:
+          branch: binder # The branch the action should deploy to.
+          folder: . # The folder the action should deploy.
+
+  tex:
+    name: Latex Build and Deploy
+    runs-on: ubuntu-22.04
+    env:
+      # RE https://stackoverflow.com/a/40184923/17332200
+      PIP_NO_CACHE_DIR: 1
+    container:
+      image: ghcr.io/mmore500/teximage:sha-77b8179
+      options: --user root
+    permissions:
+      contents: write
+      id-token: write
+      pages: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: 'recursive'
+      - name: Build LaTeX document
+        run: |
+          trap 'cat tex/*.log || true >> "$GITHUB_OUTPUT"' EXIT
+          make -C tex
+      - name: Prepare deploy directory
+        run: |
+          mkdir -p deploy
+          cp tex/*-draft.pdf deploy/
+          echo "<html><body><a href="$(ls deploy)">Download Manuscript Draft [PDF]</a></body></html>" > deploy/index.html
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: manuscript
+          path: tex/*-draft.pdf
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: deploy
+      - name: Deploy to GitHub Pages
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  slurm:
+    runs-on: ubuntu-22.04
+    env:
+      # RE https://stackoverflow.com/a/40184923/17332200
+      PIP_NO_CACHE_DIR: 1
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git lshw python3.10-venv
+      - name: Install Nix
+        uses: cachix/install-nix-action@v25
+        with:
+          nix_path: nixpkgs=channel:nixos-22.11
+      - name: Set up Nix Channels
+        run: |
+          nix-channel --add https://nixos.org/channels/nixpkgs-unstable nixpkgs
+          nix-channel --update
+      - name: Test nix
+        run: |
+          nix-env -iA nixpkgs.cowsay nixpkgs.hello
+          cowsay "Hello from Nix!"
+          hello
+      - name: Set up Apptainer
+        run: echo "nix-env -iA nixpkgs.apptainer" | sh
+      - name: Test Apptainer
+        run: |
+          apptainer --version
+          sudo "$(which apptainer)" exec docker://busybox:latest echo "Hello from Singularity and Docker!"
+      - name: Test scripts
+        run: |
+          for script in $(find slurm -name "*.sh"); do
+            echo "${script}"
+            ./${script}
+          done

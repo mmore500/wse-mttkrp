@@ -1,0 +1,4 @@
+[submodule "tex"]
+	path = tex
+	url = https://github.com/mmore500/paperproject.git
+	branch = tex
